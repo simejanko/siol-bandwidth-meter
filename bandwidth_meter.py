@@ -43,6 +43,8 @@ def get_stats(ip, delay):
     """ Returns network usage for each port. """
 
     try:
+        #stats reset doesn't always work if we haven't recently requested stats
+        urllib.request.urlopen(STATS_PATH_FORMAT.format(ip))
         urllib.request.urlopen(RESET_PATH_FORMAT.format(ip))
         time.sleep(delay)
 
