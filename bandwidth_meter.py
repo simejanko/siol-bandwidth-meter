@@ -7,9 +7,10 @@ STATS_PATH_FORMAT = "http://{}/statsifc.html"
 RESET_PATH_FORMAT = "http://{}/statsifcreset.html"
 PORT_NAMES = {'eth0': 'LAN1', 'eth1': 'LAN2', 'eth2': 'LAN3', 'eth3': 'LAN4', 'eth4': 'WAN'}
 
-NAME_COLUMN = 0
-UP_USAGE_COLUMN = 1
-DOWN_USAGE_COLUMN = 9
+# maps port_data lengths to the index of column (to support multiple devices)
+NAME_COLUMN = {17: 0, 9: 0}
+UP_USAGE_COLUMN = {17: 1, 9: 1}
+DOWN_USAGE_COLUMN = {17: 9, 9: 5}
 
 
 def check_positive(value):
@@ -43,7 +44,7 @@ def get_stats(ip, delay):
     """ Returns network usage for each port. """
 
     try:
-        #stats reset doesn't always work if we haven't recently requested stats
+        # stats reset doesn't always work if we haven't recently requested stats
         urllib.request.urlopen(STATS_PATH_FORMAT.format(ip))
         urllib.request.urlopen(RESET_PATH_FORMAT.format(ip))
         time.sleep(delay)
@@ -61,13 +62,21 @@ def get_stats(ip, delay):
             if_stat_port = sorted(if_stat_list.split('|'))
             for port_raw in if_stat_port:
                 port_data = port_raw.split(',')
-                port_id = port_data[NAME_COLUMN]
+                port_data_l = len(port_data)
+                if not all(port_data_l in c for c in (NAME_COLUMN, UP_USAGE_COLUMN, DOWN_USAGE_COLUMN)):
+                    continue
+
+                name_column = NAME_COLUMN[port_data_l]
+                up_usage_column = UP_USAGE_COLUMN[port_data_l]
+                down_usage_column = DOWN_USAGE_COLUMN[port_data_l]
+
+                port_id = port_data[name_column]
                 if port_id not in PORT_NAMES:
                     continue
 
                 port_name = PORT_NAMES[port_id]
-                avg_up_usage = (int(port_data[UP_USAGE_COLUMN]) / 1e3) / delay
-                avg_down_usage = (int(port_data[DOWN_USAGE_COLUMN]) / 1e3) / delay
+                avg_up_usage = (int(port_data[up_usage_column]) / 1e3) / delay
+                avg_down_usage = (int(port_data[down_usage_column]) / 1e3) / delay
                 port_stats.append((port_name, avg_up_usage, avg_down_usage))
 
         return port_stats
@@ -86,7 +95,8 @@ if __name__ == '__main__':
             port_stats = get_stats(args.ip, args.delay)
 
             if port_stats is None:
-                print("Error retrieving stats. Make sure your ip, username and password settings are correct.")
+                print("Error retrieving stats. Make sure your ip, username and password settings are correct. It is "
+                      "possible that your device is not supported.")
                 time.sleep(args.delay)
                 continue
 
