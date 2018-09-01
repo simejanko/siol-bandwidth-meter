@@ -20,4 +20,4 @@ optional arguments:
   **-d** :     delay (in s) between each update (default: 5)
 
 # Windows executable
-Windows executable made with PyInstaller is also available [here](http://s000.tinyupload.com/index.php?file_id=58276614944645026960).
+Windows executable made with PyInstaller is also available [here](http://s000.tinyupload.com/?file_id=37117887648660385251).
