@@ -47,10 +47,12 @@ def get_stats(ip, delay):
         # stats reset doesn't always work if we haven't recently requested stats
         urllib.request.urlopen(STATS_PATH_FORMAT.format(ip))
         urllib.request.urlopen(RESET_PATH_FORMAT.format(ip))
+        start_time = time.time()
         time.sleep(delay)
 
         port_stats = []
         with urllib.request.urlopen(STATS_PATH_FORMAT.format(ip)) as response:
+            true_delay = time.time() - start_time
             text = response.read().decode('utf8')
             for line in text.split("\n"):
                 if PARSE_VAR in line:
@@ -75,8 +77,8 @@ def get_stats(ip, delay):
                     continue
 
                 port_name = PORT_NAMES[port_id]
-                avg_up_usage = (int(port_data[up_usage_column]) / 1e3) / delay
-                avg_down_usage = (int(port_data[down_usage_column]) / 1e3) / delay
+                avg_up_usage = (int(port_data[up_usage_column]) / 1e3) / true_delay
+                avg_down_usage = (int(port_data[down_usage_column]) / 1e3) / true_delay
                 port_stats.append((port_name, avg_up_usage, avg_down_usage))
 
         return port_stats
