@@ -1,6 +1,6 @@
 # Siol bandwidth meter
 
-Simple script for measuring bandwidth of LAN ports on Siol's innbox v45 (might work on other Siol's routers). 
+Simple script for measuring bandwidth of LAN ports on Siol's innbox v45 and v60U (might work on other Siol's routers). 
 Requires no dependencies beyond Python 3.6.
 
 # Usage
